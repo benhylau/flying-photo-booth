@@ -8,6 +8,7 @@ package com.groundupworks.partyphotobooth.fragments;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable.Callback;
 import android.hardware.Camera;
@@ -19,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -108,6 +110,12 @@ public class CaptureFragment extends Fragment {
 
     private TextView mFrameCount;
 
+    private SizeCamera mSize;
+
+    private PhotoBoothMode mMode;
+
+    private Boolean mInitiateCountdownCaptureInProgress = false;
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -146,10 +154,10 @@ public class CaptureFragment extends Fragment {
          */
         // Get from preference.
         PreferencesHelper preferencesHelper = new PreferencesHelper();
-        PhotoBoothMode mode = preferencesHelper.getPhotoBoothMode(appContext);
+        mMode = preferencesHelper.getPhotoBoothMode(appContext);
 
         int cameraPreference = CameraInfo.CAMERA_FACING_FRONT;
-        if (PhotoBoothMode.PHOTOGRAPHER.equals(mode)) {
+        if (PhotoBoothMode.PHOTOGRAPHER.equals(mMode) || PhotoBoothMode.LUMINANCE_DETECTION.equals(mMode)) {
             cameraPreference = CameraInfo.CAMERA_FACING_BACK;
         }
 
@@ -191,7 +199,7 @@ public class CaptureFragment extends Fragment {
          * Functionalize views.
          */
         // Configure start button and trigger behaviour.
-        switch (mode) {
+        switch (mMode) {
             case PHOTOGRAPHER:
                 mStartButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -251,6 +259,10 @@ public class CaptureFragment extends Fragment {
                     }
                 });
                 linkStartButton();
+            break;
+            case LUMINANCE_DETECTION:
+                //nothing.
+                break;
         }
 
         // Show frame count only if more than one frame is to be captured.
@@ -261,6 +273,30 @@ public class CaptureFragment extends Fragment {
         }
     }
 
+    private void takePictyure(){
+
+            // Auto-trigger when camera is ready and preview has started.
+            mPreview.setOnPreviewListener(new CenteredPreview.OnPreviewListener() {
+                @Override
+                public void onStarted() {
+                    if (isActivityAlive()) {
+                        mPreview.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (isActivityAlive()) {
+                                    initiateCountdownCapture();
+                                }
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onStopped() {
+                    // Do nothing.
+                }
+            });
+    }
     @Override
     public void onStart() {
         super.onStart();
@@ -317,7 +353,7 @@ public class CaptureFragment extends Fragment {
                 params.setJpegQuality(CAPTURED_JPEG_QUALITY);
 
                 // Set optimal size for Jpeg capture.
-                Size pictureSize = CameraHelper.getOptimalPictureSize(params.getSupportedPreviewSizes(),
+                final Size pictureSize = CameraHelper.getOptimalPictureSize(params.getSupportedPreviewSizes(),
                         params.getSupportedPictureSizes(), ImageHelper.IMAGE_SIZE, ImageHelper.IMAGE_SIZE);
                 params.setPictureSize(pictureSize.width, pictureSize.height);
 
@@ -329,6 +365,36 @@ public class CaptureFragment extends Fragment {
                 mPreviewDisplayOrientation = CameraHelper.getCameraScreenOrientation(getActivity(), mCameraId);
                 mCamera.setDisplayOrientation(mPreviewDisplayOrientation);
                 mPreview.start(mCamera, pictureSize.width, pictureSize.height, mPreviewDisplayOrientation);
+
+                Parameters parameters = mCamera.getParameters();
+                parameters.setPreviewFormat(ImageFormat.NV21);
+
+                final int width = pictureSize.width;
+                final int height = pictureSize.height;
+                mSize = new SizeCamera(width, height);
+                if(mMode == PhotoBoothMode.LUMINANCE_DETECTION) {
+                    mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+                        @Override
+                        public void onPreviewFrame(byte[] data, Camera camera) {
+                            Log.i("david","holass");
+
+                            boolean result = detect(data, mSize);
+                            Log.i("david", "result=" + result);
+                            if(result == true && mInitiateCountdownCaptureInProgress == false) {
+                                takePictyure();
+                            }
+                        }
+                    });
+                }
+//                mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+//                    @Override
+//                    public void onPreviewFrame(byte[] data, Camera camera) {
+//                        Log.i("david","holass");
+//
+//                       boolean result = detect(data, mSize);
+//                        Log.i("david", "result=" + result);
+//                    }
+//                });
             } catch (RuntimeException e) {
                 // Call to client.
                 ICallbacks callbacks = getCallbacks();
@@ -343,6 +409,41 @@ public class CaptureFragment extends Fragment {
                 callbacks.onErrorCameraNone();
             }
         }
+    }
+
+    /* Control the threshold above which two pixels are considered different
+	 * 25 means 10% pixel difference
+	 * */
+    private static final KeyValue<String,Integer> mPixelThreshold = new KeyValue<String,Integer>("pim.md.pixel_threshold", 25);
+
+    /* Control the threshold above which two images are considered different
+     * 9216 = 3% of a 640x480 image
+     * */
+    private static final KeyValue<String,Integer> mThreshold = new KeyValue<String,Integer>("pim.md.threshold", 9216);
+
+    private AndroidImage_NV21 mBackground;
+    private AndroidImage_NV21 mAndroidImage;
+    public boolean detect(byte[] data, SizeCamera pictureSize) {
+        // Create the "background" picture, the one that will be used
+        // to check the next frame against.
+        if(mBackground == null) {
+            mBackground = new AndroidImage_NV21(data, pictureSize);
+            return false;
+        }
+
+        boolean motionDetected = false;
+
+        mAndroidImage = new AndroidImage_NV21(data, pictureSize);
+
+        motionDetected = mAndroidImage.isDifferent(mBackground,
+                mPixelThreshold.value, mThreshold.value);
+
+        // Replace the current image with the background.
+        // This is an oversimplification, you would normally blend the two
+        // images to create a new one.
+        mBackground = mAndroidImage;
+
+        return motionDetected;
     }
 
     @Override
@@ -419,6 +520,7 @@ public class CaptureFragment extends Fragment {
                 if (callbacks != null) {
                     callbacks.onPictureTaken(data, mPreviewDisplayOrientation, false);
                 }
+                mInitiateCountdownCaptureInProgress = false;
             }
         }
     }
@@ -507,6 +609,7 @@ public class CaptureFragment extends Fragment {
      * Initiates the capture sequence with count down.
      */
     private void initiateCountdownCapture() {
+        mInitiateCountdownCaptureInProgress = true;
         if (mCamera != null) {
             mStartButton.setEnabled(false);
 

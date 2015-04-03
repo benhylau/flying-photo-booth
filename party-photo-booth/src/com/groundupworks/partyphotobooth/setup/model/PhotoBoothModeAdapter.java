@@ -73,6 +73,12 @@ public class PhotoBoothModeAdapter extends BaseSpinnerAdapter<PhotoBoothModeAdap
         photographerMode.mDescription = context.getString(R.string.photo_booth_mode_adapter__photographer_description);
         modes.put(PhotoBoothMode.PHOTOGRAPHER.ordinal(), photographerMode);
 
+        PhotoBoothModeAdapter.Mode luminanceDetectionMode = new PhotoBoothModeAdapter.Mode();
+        luminanceDetectionMode.mMode = PhotoBoothMode.LUMINANCE_DETECTION;
+        luminanceDetectionMode.mDisplayName = context.getString(R.string.photo_booth_mode_adapter__luminance_detection_name);
+        luminanceDetectionMode.mDescription = context.getString(R.string.photo_booth_mode_adapter__luminance_detection_description);
+        modes.put(PhotoBoothMode.LUMINANCE_DETECTION.ordinal(), luminanceDetectionMode);
+
         return modes;
     }
 

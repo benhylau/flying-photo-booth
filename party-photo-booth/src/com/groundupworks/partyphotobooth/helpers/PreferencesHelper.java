@@ -38,7 +38,12 @@ public class PreferencesHelper {
         /**
          * Photographer mode uses back-facing camera and no count down.
          */
-        PHOTOGRAPHER;
+        PHOTOGRAPHER,
+
+        /**
+         * It detects a change of the luminance and starts triggering pictures.
+         */
+        LUMINANCE_DETECTION;
     }
 
     /**

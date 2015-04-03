@@ -39,6 +39,10 @@
     <string name="photo_booth_mode_adapter__automatic_description">Self-serve with a single click</string>
     <string name="photo_booth_mode_adapter__photographer_display_name">Photographer</string>
     <string name="photo_booth_mode_adapter__photographer_description">Back-facing camera</string>
+    <string name="photo_booth_mode_adapter__luminance_detection_name">AutoDetection</string>
+    <string name="photo_booth_mode_adapter__luminance_detection_description">Autodetects people</string>
+
+
 
     <!-- Photo Booth Theme Adapter -->
     <string name="photo_booth_theme_adapter__blue_display_name">Blue stripes</string>
