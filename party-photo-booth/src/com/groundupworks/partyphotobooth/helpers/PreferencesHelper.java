@@ -233,6 +233,11 @@ public class PreferencesHelper {
     private static final String KEY_NOTICE_ENABLED = "noticeEnabled";
 
     /**
+     * Key for whether the status of the sensor is on.
+     */
+    private static final String KEY_MOTION_SENSOR_STATUS = "sensorStatus";
+
+    /**
      * The default preferences for the event title.
      */
     private static final String DEFAULT_EVENT_TITLE_PREFERENCE = "";
@@ -253,8 +258,7 @@ public class PreferencesHelper {
      * @param mode    one of {@link PhotoBoothMode}. Must not be null.
      */
     public void storePhotoBoothMode(Context context, PhotoBoothMode mode) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        preferences.edit().putString(KEY_PHOTO_BOOTH_MODE, mode.name()).apply();
+        getSharedPreferences(context).edit().putString(KEY_PHOTO_BOOTH_MODE, mode.name()).apply();
     }
 
     /**
@@ -264,8 +268,7 @@ public class PreferencesHelper {
      * @return the stored {@link PhotoBoothMode}.
      */
     public PhotoBoothMode getPhotoBoothMode(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        String mode = preferences.getString(KEY_PHOTO_BOOTH_MODE, PhotoBoothMode.SELF_SERVE.name());
+        String mode = getSharedPreferences(context).getString(KEY_PHOTO_BOOTH_MODE, PhotoBoothMode.SELF_SERVE.name());
         return PhotoBoothMode.valueOf(mode);
     }
 
@@ -276,8 +279,7 @@ public class PreferencesHelper {
      * @param theme   one of {@link PhotoBoothTheme}. Must not be null.
      */
     public void storePhotoBoothTheme(Context context, PhotoBoothTheme theme) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        preferences.edit().putString(KEY_PHOTO_BOOTH_THEME, theme.name()).apply();
+        getSharedPreferences(context).edit().putString(KEY_PHOTO_BOOTH_THEME, theme.name()).apply();
     }
 
     /**
@@ -287,8 +289,7 @@ public class PreferencesHelper {
      * @return the stored {@link PhotoBoothTheme}.
      */
     public PhotoBoothTheme getPhotoBoothTheme(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        String theme = preferences.getString(KEY_PHOTO_BOOTH_THEME, PhotoBoothTheme.STRIPES_BLUE.name());
+        String theme = getSharedPreferences(context).getString(KEY_PHOTO_BOOTH_THEME, PhotoBoothTheme.STRIPES_BLUE.name());
         return PhotoBoothTheme.valueOf(theme);
     }
 
@@ -299,8 +300,7 @@ public class PreferencesHelper {
      * @param template one of {@link PhotoStripTemplate}. Must not be null.
      */
     public void storePhotoStripTemplate(Context context, PhotoStripTemplate template) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        preferences.edit().putString(KEY_PHOTO_STRIP_TEMPLATE, template.name()).apply();
+        getSharedPreferences(context).edit().putString(KEY_PHOTO_STRIP_TEMPLATE, template.name()).apply();
     }
 
     /**
@@ -310,8 +310,7 @@ public class PreferencesHelper {
      * @return the stored {@link PhotoStripTemplate}.
      */
     public PhotoStripTemplate getPhotoStripTemplate(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        String template = preferences.getString(KEY_PHOTO_STRIP_TEMPLATE, PhotoStripTemplate.VERTICAL_3.name());
+        String template = getSharedPreferences(context).getString(KEY_PHOTO_STRIP_TEMPLATE, PhotoStripTemplate.VERTICAL_3.name());
         return PhotoStripTemplate.valueOf(template);
     }
 
@@ -322,7 +321,7 @@ public class PreferencesHelper {
      * @param eventLineOne the first line of the event title; or an empty string. Pass null to clear.
      */
     public void storeEventLineOne(Context context, String eventLineOne) {
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext()).edit();
+        Editor editor = getSharedPreferences(context).edit();
         if (eventLineOne != null && eventLineOne.length() > 0) {
             editor.putString(KEY_EVENT_LINE_ONE, eventLineOne).apply();
         } else {
@@ -337,8 +336,7 @@ public class PreferencesHelper {
      * @return the first line of the event title; or an empty string.
      */
     public String getEventLineOne(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        return preferences.getString(KEY_EVENT_LINE_ONE, DEFAULT_EVENT_TITLE_PREFERENCE);
+        return getSharedPreferences(context).getString(KEY_EVENT_LINE_ONE, DEFAULT_EVENT_TITLE_PREFERENCE);
     }
 
     /**
@@ -348,7 +346,7 @@ public class PreferencesHelper {
      * @param eventLineTwo the second line of the event title; or an empty string. Pass null to clear.
      */
     public void storeEventLineTwo(Context context, String eventLineTwo) {
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext()).edit();
+        Editor editor = getSharedPreferences(context).edit();
         if (eventLineTwo != null && eventLineTwo.length() > 0) {
             editor.putString(KEY_EVENT_LINE_TWO, eventLineTwo).apply();
         } else {
@@ -363,8 +361,7 @@ public class PreferencesHelper {
      * @return the second line of the event title; or an empty string.
      */
     public String getEventLineTwo(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        return preferences.getString(KEY_EVENT_LINE_TWO, DEFAULT_EVENT_TITLE_PREFERENCE);
+        return getSharedPreferences(context).getString(KEY_EVENT_LINE_TWO, DEFAULT_EVENT_TITLE_PREFERENCE);
     }
 
     /**
@@ -374,7 +371,7 @@ public class PreferencesHelper {
      * @param uri     the uri to the event logo image; or an empty string. Pass null to clear.
      */
     public void storeEventLogoUri(Context context, String uri) {
-        Editor editor = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext()).edit();
+        Editor editor = getSharedPreferences(context).edit();
         if (uri != null && uri.length() > 0) {
             editor.putString(KEY_EVENT_LOGO_URI, uri).apply();
         } else {
@@ -389,8 +386,7 @@ public class PreferencesHelper {
      * @return the uri to the event logo image; or an empty string.
      */
     public String getEventLogoUri(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        return preferences.getString(KEY_EVENT_LOGO_URI, DEFAULT_EVENT_LOGO_URI_PREFERENCE);
+        return getSharedPreferences(context).getString(KEY_EVENT_LOGO_URI, DEFAULT_EVENT_LOGO_URI_PREFERENCE);
     }
 
     /**
@@ -400,7 +396,7 @@ public class PreferencesHelper {
      * @param eventDate the event date in milliseconds. Pass {@link PreferencesHelper#EVENT_DATE_HIDDEN} to hide event date.
      */
     public void storeEventDate(Context context, long eventDate) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences preferences = getSharedPreferences(context);
         preferences.edit().putLong(KEY_EVENT_DATE, eventDate).apply();
     }
 
@@ -412,7 +408,7 @@ public class PreferencesHelper {
      * date is returned if no record is stored.
      */
     public long getEventDate(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences preferences = getSharedPreferences(context);
         return preferences.getLong(KEY_EVENT_DATE, new Date().getTime());
     }
 
@@ -423,7 +419,7 @@ public class PreferencesHelper {
      * @param isEnabled true to enable; false otherwise.
      */
     public void storeNoticeEnabled(Context context, boolean isEnabled) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        SharedPreferences preferences = getSharedPreferences(context);
         preferences.edit().putBoolean(KEY_NOTICE_ENABLED, isEnabled).apply();
     }
 
@@ -434,7 +430,37 @@ public class PreferencesHelper {
      * @return true if enabled; false otherwise.
      */
     public boolean getNoticeEnabled(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        return preferences.getBoolean(KEY_NOTICE_ENABLED, false);
+        return getSharedPreferences(context).getBoolean(KEY_NOTICE_ENABLED, false);
+    }
+
+
+    /**
+     * Stores whether enabled share services are shown in a notice screen.
+     *
+     * @param context   the {@link Context}.
+     * @param isDetected true to enable; false otherwise.
+     */
+    public void storeSensorDetected(Context context, boolean isDetected) {
+        SharedPreferences preferences = getSharedPreferences(context);
+        preferences.edit().putBoolean(KEY_MOTION_SENSOR_STATUS, isDetected).apply();
+    }
+
+    /**
+     * Reads whether enabled share services are shown in a notice screen.
+     *
+     * @param context the {@link Context}.
+     * @return true if enabled; false otherwise.
+     */
+    public boolean getSensorDetected(Context context) {
+        return getSharedPreferences(context).getBoolean(KEY_MOTION_SENSOR_STATUS, false);
+    }
+
+
+    /**
+     * It returns the {@link android.content.SharedPreferences} to use in this Helper.
+     * @param context the {@link Context}.
+     */
+    private SharedPreferences getSharedPreferences(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
     }
 }

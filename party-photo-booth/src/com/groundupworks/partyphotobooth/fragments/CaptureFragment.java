@@ -19,6 +19,7 @@ import android.hardware.Camera.Size;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -41,9 +42,13 @@ import com.groundupworks.partyphotobooth.helpers.PreferencesHelper.PhotoBoothMod
 import com.groundupworks.partyphotobooth.kiosk.KioskActivity;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Ui for the camera preview and capture screen.
@@ -114,8 +119,9 @@ public class CaptureFragment extends Fragment {
 
     private PhotoBoothMode mMode;
 
-    private Boolean mInitiateCountdownCaptureInProgress = false;
-
+    private long mActivityCreatedTimestamp;
+    private long MOTION_SENSOR_DELAY = TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS);
+    private PreferencesHelper mPreferencesHelper;
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -149,12 +155,13 @@ public class CaptureFragment extends Fragment {
         final int totalFrames = args.getInt(FRAGMENT_BUNDLE_KEY_TOTAL_FRAMES);
         final int currentFrame = args.getInt(FRAGMENT_BUNDLE_KEY_CURRENT_FRAME);
 
+        mActivityCreatedTimestamp = System.currentTimeMillis();
         /*
          * Select camera from preference.
          */
         // Get from preference.
-        PreferencesHelper preferencesHelper = new PreferencesHelper();
-        mMode = preferencesHelper.getPhotoBoothMode(appContext);
+        mPreferencesHelper = new PreferencesHelper();
+        mMode = mPreferencesHelper.getPhotoBoothMode(appContext);
 
         int cameraPreference = CameraInfo.CAMERA_FACING_FRONT;
         if (PhotoBoothMode.PHOTOGRAPHER.equals(mMode) || PhotoBoothMode.LUMINANCE_DETECTION.equals(mMode)) {
@@ -193,6 +200,7 @@ public class CaptureFragment extends Fragment {
                 return false;
             }
         };
+
         activity.setKeyEventHandler(mKeyEventHandler);
 
         /*
@@ -261,8 +269,18 @@ public class CaptureFragment extends Fragment {
                 linkStartButton();
             break;
             case LUMINANCE_DETECTION:
-                //nothing.
-                break;
+                boolean sensorOn = mPreferencesHelper.getSensorDetected(appContext);
+                if (sensorOn) {
+                    mPreview.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            initiateCapture();
+                        }
+                    }, 2000);
+                } else {
+
+                }
+            break;
         }
 
         // Show frame count only if more than one frame is to be captured.
@@ -273,30 +291,6 @@ public class CaptureFragment extends Fragment {
         }
     }
 
-    private void takePictyure(){
-
-            // Auto-trigger when camera is ready and preview has started.
-            mPreview.setOnPreviewListener(new CenteredPreview.OnPreviewListener() {
-                @Override
-                public void onStarted() {
-                    if (isActivityAlive()) {
-                        mPreview.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (isActivityAlive()) {
-                                    initiateCountdownCapture();
-                                }
-                            }
-                        });
-                    }
-                }
-
-                @Override
-                public void onStopped() {
-                    // Do nothing.
-                }
-            });
-    }
     @Override
     public void onStart() {
         super.onStart();
@@ -372,29 +366,20 @@ public class CaptureFragment extends Fragment {
                 final int width = pictureSize.width;
                 final int height = pictureSize.height;
                 mSize = new SizeCamera(width, height);
-                if(mMode == PhotoBoothMode.LUMINANCE_DETECTION) {
+                if (mMode == PhotoBoothMode.LUMINANCE_DETECTION) {
                     mCamera.setPreviewCallback(new Camera.PreviewCallback() {
                         @Override
                         public void onPreviewFrame(byte[] data, Camera camera) {
-                            Log.i("david","holass");
-
-                            boolean result = detect(data, mSize);
-                            Log.i("david", "result=" + result);
-                            if(result == true && mInitiateCountdownCaptureInProgress == false) {
-                                takePictyure();
+                             if(mActivityCreatedTimestamp + MOTION_SENSOR_DELAY < System.currentTimeMillis()) {
+                                boolean result = detect(data, mSize);
+                                if (result == true) {
+                                    mPreferencesHelper.storeSensorDetected(getActivity(), true);
+                                    initiateCapture();
+                                }
                             }
                         }
                     });
                 }
-//                mCamera.setPreviewCallback(new Camera.PreviewCallback() {
-//                    @Override
-//                    public void onPreviewFrame(byte[] data, Camera camera) {
-//                        Log.i("david","holass");
-//
-//                       boolean result = detect(data, mSize);
-//                        Log.i("david", "result=" + result);
-//                    }
-//                });
             } catch (RuntimeException e) {
                 // Call to client.
                 ICallbacks callbacks = getCallbacks();
@@ -431,11 +416,9 @@ public class CaptureFragment extends Fragment {
             return false;
         }
 
-        boolean motionDetected = false;
-
         mAndroidImage = new AndroidImage_NV21(data, pictureSize);
 
-        motionDetected = mAndroidImage.isDifferent(mBackground,
+        boolean motionDetected = mAndroidImage.isDifferent(mBackground,
                 mPixelThreshold.value, mThreshold.value);
 
         // Replace the current image with the background.
@@ -520,7 +503,6 @@ public class CaptureFragment extends Fragment {
                 if (callbacks != null) {
                     callbacks.onPictureTaken(data, mPreviewDisplayOrientation, false);
                 }
-                mInitiateCountdownCaptureInProgress = false;
             }
         }
     }
@@ -595,6 +577,7 @@ public class CaptureFragment extends Fragment {
 
     /**
      * Initiates the capture sequence.
+     * <br> Call this from the UI THREAD.
      */
     private void initiateCapture() {
         if (mCamera != null) {
@@ -609,7 +592,6 @@ public class CaptureFragment extends Fragment {
      * Initiates the capture sequence with count down.
      */
     private void initiateCountdownCapture() {
-        mInitiateCountdownCaptureInProgress = true;
         if (mCamera != null) {
             mStartButton.setEnabled(false);
 
