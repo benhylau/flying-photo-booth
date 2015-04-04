@@ -18,7 +18,9 @@ import android.hardware.Camera.Size;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,9 +41,13 @@ import com.groundupworks.partyphotobooth.helpers.PreferencesHelper.PhotoBoothMod
 import com.groundupworks.partyphotobooth.kiosk.KioskActivity;
 
 import java.lang.ref.WeakReference;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Ui for the camera preview and capture screen.
@@ -57,6 +63,8 @@ public class CaptureFragment extends Fragment {
     public static final String FRAGMENT_BUNDLE_KEY_CURRENT_FRAME = "currentFrame";
 
     public static final String FRAGMENT_BUNDLE_KEY_TOTAL_FRAMES = "totalFrames";
+
+    public static final String FRAGMENT_BUNDLE_KEY_LAST_FRAME_TIME = "lastFrameTime";
 
     /**
      * Invalid camera id.
@@ -140,12 +148,11 @@ public class CaptureFragment extends Fragment {
         final Bundle args = getArguments();
         final int totalFrames = args.getInt(FRAGMENT_BUNDLE_KEY_TOTAL_FRAMES);
         final int currentFrame = args.getInt(FRAGMENT_BUNDLE_KEY_CURRENT_FRAME);
-
         /*
          * Select camera from preference.
          */
         // Get from preference.
-        PreferencesHelper preferencesHelper = new PreferencesHelper();
+        final PreferencesHelper preferencesHelper = new PreferencesHelper();
         PhotoBoothMode mode = preferencesHelper.getPhotoBoothMode(appContext);
 
         int cameraPreference = CameraInfo.CAMERA_FACING_FRONT;
@@ -185,7 +192,21 @@ public class CaptureFragment extends Fragment {
                 return false;
             }
         };
+
         activity.setKeyEventHandler(mKeyEventHandler);
+
+        boolean sensorOn = preferencesHelper.getSensorDetected(appContext);
+        sensorOn = true;
+        if (sensorOn = true) {
+            mPreview.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    initiateCapture();
+                }
+            }, 2000);
+        } else {
+
+        }
 
         /*
          * Functionalize views.
@@ -493,6 +514,7 @@ public class CaptureFragment extends Fragment {
 
     /**
      * Initiates the capture sequence.
+     * <br> Call this from the UI THREAD.
      */
     private void initiateCapture() {
         if (mCamera != null) {
