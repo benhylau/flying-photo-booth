@@ -429,6 +429,7 @@ public class CaptureFragment extends Fragment {
     public void onPause() {
         if (mCamera != null) {
             mPreview.stop();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
