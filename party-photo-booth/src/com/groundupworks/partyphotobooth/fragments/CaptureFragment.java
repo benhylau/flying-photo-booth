@@ -19,9 +19,7 @@ import android.hardware.Camera.Size;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,15 +37,13 @@ import com.groundupworks.lib.photobooth.views.CenteredPreview;
 import com.groundupworks.partyphotobooth.R;
 import com.groundupworks.partyphotobooth.helpers.PreferencesHelper;
 import com.groundupworks.partyphotobooth.helpers.PreferencesHelper.PhotoBoothMode;
+import com.groundupworks.partyphotobooth.image.AndroidImage_NV21;
 import com.groundupworks.partyphotobooth.kiosk.KioskActivity;
 
 import java.lang.ref.WeakReference;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**

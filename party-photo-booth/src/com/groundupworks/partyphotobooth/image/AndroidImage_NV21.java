@@ -1,9 +1,12 @@
-package com.groundupworks.partyphotobooth.fragments;
+package com.groundupworks.partyphotobooth.image;
 
 import android.util.Log;
 
+import com.groundupworks.partyphotobooth.fragments.SizeCamera;
+
 /**
- * @author Marco Dinacci <marco.dinacci@gmail.com>
+ * Based in Marco Dinacci blog: http://www.intransitione.com/blog/how-to-detect-motion-on-an-android-device/
+ * @author davidf
  */
 public class AndroidImage_NV21 extends AbstractAndroidImage {
 
@@ -13,7 +16,7 @@ public class AndroidImage_NV21 extends AbstractAndroidImage {
 		super(data, size);
 	}
 
-	@Override
+    @Override
 	public boolean isDifferent(AndroidImage other, int pixel_threshold, 
 			int threshold) {
 		
@@ -48,11 +51,5 @@ public class AndroidImage_NV21 extends AbstractAndroidImage {
 				+ (100 / ( size / totDifferentPixels) ) + "%");
 		
 		return totDifferentPixels > threshold;
-	}
-	
-	@Override
-	public AndroidImage toGrayscale() {
-		// TODO to implement.
-		return this;
 	}
 }

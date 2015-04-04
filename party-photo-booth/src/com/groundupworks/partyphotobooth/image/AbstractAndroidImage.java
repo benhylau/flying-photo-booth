@@ -1,14 +1,13 @@
-package com.groundupworks.partyphotobooth.fragments;
+package com.groundupworks.partyphotobooth.image;
 
 import android.util.Log;
+
+import com.groundupworks.partyphotobooth.fragments.SizeCamera;
 
 /**
  * Generic class for (simple) image processing. 
  * It doesn't subclass Bitmap in android.graphics as it's declared final.
- * 
- * TODO refactor: create various classes, one for each PixelFormat and implement
  * the abstract operations defined here instead of having an ugly switch case
- * 
  */
 public abstract class AbstractAndroidImage implements AndroidImage {
 	
@@ -32,32 +31,16 @@ public abstract class AbstractAndroidImage implements AndroidImage {
 			result = false;
 		}
 		
-		otherData = null;
-		
 		Log.d(TAG, "Images are compatible: " + result);
 		
 		return result;
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.marcodinacci.android.commons.AndroidImage#toGrayScale()
-	 */
-	@Override
-	public abstract AndroidImage toGrayscale();
 
-	/* (non-Javadoc)
-	 * @see com.marcodinacci.android.commons.AndroidImage#erode(int)
-	 * TODO implement. Use a kernel instead of an int or use the int as a 
-	 * manhattan distance
-	 */
 	@Override
 	public AndroidImage erode(int erosionLevel) {
 		return this;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.marcodinacci.android.commons.AndroidImage#morph(byte[], int)
-	 */
 	@Override
 	public AndroidImage morph(AndroidImage other, int value) {
 		Log.v(TAG, "Beginning morph operation with value: " + value);

@@ -1,9 +1,6 @@
-package com.groundupworks.partyphotobooth.fragments;
+package com.groundupworks.partyphotobooth.image;
 
 public interface AndroidImage {
-
-	/** Convert the image to grayscale. In place. */
-	public abstract AndroidImage toGrayscale();
 
 	/** Erode the image. In place. */
 	public abstract AndroidImage erode(int erosionLevel);
