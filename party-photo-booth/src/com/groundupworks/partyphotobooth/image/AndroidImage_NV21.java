@@ -11,15 +11,17 @@ import com.groundupworks.partyphotobooth.fragments.SizeCamera;
 public class AndroidImage_NV21 extends AbstractAndroidImage {
 
 	private static final String TAG = "AndroidImage_NV21";
+    private SizeCamera<Integer,Integer> mSize = null;
 
 	public AndroidImage_NV21(byte[] data, SizeCamera<Integer, Integer> size) {
 		super(data, size);
+        mSize = size;
 	}
 
-    @Override
-	public boolean isDifferent(AndroidImage other, int pixel_threshold, 
-			int threshold) {
-		
+	@Override
+	public boolean isDifferent(AndroidImage other, int pixel_threshold,
+			float threshold) {
+
 		if(!assertImage(other)) {
 			return false;
 		}
@@ -28,9 +30,9 @@ public class AndroidImage_NV21 extends AbstractAndroidImage {
 		int totDifferentPixels = 0;
 		
 		// For the sake of this demo just use a 640x480 image.
-		int height = 480;
-		int width = 640;
-		int size = 307200; // 640x480
+		int height = mSize.mHeight;
+		int width = mSize.mWidth;
+		int size = height*width; // 640x480
 		for (int i = 0, ij=0; i < height; i++) {
 			for (int j = 0; j < width; j++,ij++) {
 				int pix = (0xff & ((int) mData[ij])) - 16;
@@ -47,9 +49,9 @@ public class AndroidImage_NV21 extends AbstractAndroidImage {
 		}
 		
 		if(totDifferentPixels == 0) totDifferentPixels = 1;
-		Log.d(TAG, "Number of different pixels: " + totDifferentPixels + " -> " 
-				+ (100 / ( size / totDifferentPixels) ) + "%");
+		Log.d("david", "Number of different pixels: " + totDifferentPixels + " -> "
+				+ (100 / ( size / totDifferentPixels) ) + "% (total=" + size + ")");
 		
-		return totDifferentPixels > threshold;
+		return totDifferentPixels > (threshold * size);
 	}
 }

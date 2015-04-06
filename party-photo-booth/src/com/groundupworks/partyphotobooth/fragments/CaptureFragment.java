@@ -20,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -358,16 +359,17 @@ public class CaptureFragment extends Fragment {
 
                 Parameters parameters = mCamera.getParameters();
                 parameters.setPreviewFormat(ImageFormat.NV21);
-
+//                parameters.setPreviewFpsRange();
                 final int width = pictureSize.width;
                 final int height = pictureSize.height;
                 mSize = new SizeCamera(width, height);
                 if (mMode == PhotoBoothMode.LUMINANCE_DETECTION) {
-                    mCamera.setPreviewCallback(new Camera.PreviewCallback() {
+                        mCamera.setPreviewCallback(new Camera.PreviewCallback() {
                         @Override
                         public void onPreviewFrame(byte[] data, Camera camera) {
                              if(mActivityCreatedTimestamp + MOTION_SENSOR_DELAY < System.currentTimeMillis()) {
                                 boolean result = detect(data, mSize);
+                                Log.i("david", "result: " + result);
                                 if (result == true) {
                                     mPreferencesHelper.storeSensorDetected(getActivity(), true);
                                     initiateCapture();
@@ -400,7 +402,7 @@ public class CaptureFragment extends Fragment {
     /* Control the threshold above which two images are considered different
      * 9216 = 3% of a 640x480 image
      * */
-    private static final KeyValue<String,Integer> mThreshold = new KeyValue<String,Integer>("pim.md.threshold", 9216);
+    private static final KeyValue<String,Float> mThreshold = new KeyValue<String,Float>("pim.md.threshold", 0.2f);
 
     private AndroidImage_NV21 mBackground;
     private AndroidImage_NV21 mAndroidImage;
