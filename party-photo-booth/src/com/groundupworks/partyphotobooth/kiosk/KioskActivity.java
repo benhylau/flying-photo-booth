@@ -395,6 +395,7 @@ public class KioskActivity extends FragmentActivity implements KioskSetupFragmen
      * Launches a new {@link ConfirmationFragment} in the right side container.
      */
     private void launchConfirmationFragment() {
+        mPreferencesHelper.storeSensorDetected(getApplicationContext(), false);
         replaceRightFragment(ConfirmationFragment.newInstance());
     }
 
