@@ -20,7 +20,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -359,7 +358,6 @@ public class CaptureFragment extends Fragment {
 
                 Parameters parameters = mCamera.getParameters();
                 parameters.setPreviewFormat(ImageFormat.NV21);
-//                parameters.setPreviewFpsRange();
                 final int width = pictureSize.width;
                 final int height = pictureSize.height;
                 mSize = new SizeCamera(width, height);
@@ -369,7 +367,6 @@ public class CaptureFragment extends Fragment {
                         public void onPreviewFrame(byte[] data, Camera camera) {
                              if(mActivityCreatedTimestamp + MOTION_SENSOR_DELAY < System.currentTimeMillis()) {
                                 boolean result = detect(data, mSize);
-                                Log.i("david", "result: " + result);
                                 if (result == true) {
                                     mPreferencesHelper.storeSensorDetected(getActivity(), true);
                                     initiateCapture();
@@ -423,7 +420,6 @@ public class CaptureFragment extends Fragment {
         // This is an oversimplification, you would normally blend the two
         // images to create a new one.
         mBackground = mAndroidImage;
-
         return motionDetected;
     }
 

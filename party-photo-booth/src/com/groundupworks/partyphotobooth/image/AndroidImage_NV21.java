@@ -49,9 +49,15 @@ public class AndroidImage_NV21 extends AbstractAndroidImage {
 		}
 		
 		if(totDifferentPixels == 0) totDifferentPixels = 1;
-		Log.d("david", "Number of different pixels: " + totDifferentPixels + " -> "
+		Log.d(TAG, "Number of different pixels: " + totDifferentPixels + " -> "
 				+ (100 / ( size / totDifferentPixels) ) + "% (total=" + size + ")");
 		
-		return totDifferentPixels > (threshold * size);
-	}
+		boolean result = totDifferentPixels > (threshold * size);
+
+        if (result == true) {
+            Log.d(TAG, "Image different detected!");
+        }
+
+        return result;
+    }
 }
